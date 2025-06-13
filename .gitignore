@@ -1,0 +1,70 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing
+/coverage
+.nyc_output
+
+# Next.js
+/.next/
+/out/
+.next/
+.next/cache/
+.next/cache/webpack/
+.next/cache/webpack/server-development/
+.next/cache/webpack/server-production/
+
+# Production
+/build
+/dist
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log*
+.firebaserc
+firebase.json
+functions/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.yaml
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.eslintcache
+.npm
+.yarn-integrity
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+*.pem
+*.tgz
+.dataconnect
+.vercel
