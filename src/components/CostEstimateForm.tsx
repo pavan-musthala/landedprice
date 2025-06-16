@@ -11,6 +11,11 @@ import { saveToGoogleSheet } from '@/lib/googleSheets';
 import { COMMON_CURRENCIES } from '@/types';
 import { originCountries, seaOriginPorts, seaDestinationPorts, airOriginAirports, airDestinationAirports, hsnCodes, OriginCountry } from '@/lib/constants';
 
+// Add this type guard function at the top of the file, after imports
+function isValidCountry(country: string): country is keyof typeof airOriginAirports {
+  return country in airOriginAirports;
+}
+
 export default function CostEstimateForm() {
   const router = useRouter();
   const [result, setResult] = useState<CostBreakdown | null>(null);
@@ -250,17 +255,18 @@ export default function CostEstimateForm() {
                 >
                   <option value="">Select {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}</option>
                   {(() => {
-                     const country = watch('originCountry') as keyof typeof airOriginAirports;
-                     if (shippingMode === 'Air' && country && airOriginAirports[country]) {
+                     const country = watch('originCountry');
+                     if (!country || !isValidCountry(country)) return null;
+
+                     if (shippingMode === 'Air') {
                         return airOriginAirports[country].map((airport) => (
                            <option key={airport} value={airport}>{airport}</option>
                         ));
-                     } else if (shippingMode !== 'Air' && country && seaOriginPorts[country]) {
+                     } else {
                         return seaOriginPorts[country].map((port) => (
                            <option key={port} value={port}>{port}</option>
                         ));
                      }
-                     return null;
                   })()}
                 </select>
                  {errors.originPort && (
