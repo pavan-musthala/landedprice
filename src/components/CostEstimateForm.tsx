@@ -73,20 +73,19 @@ export default function CostEstimateForm() {
   };
 
   const renderOriginPortOptions = () => {
-    const country = watch('originCountry') as OriginCountry | undefined;
+    const country = watch('originCountry') as keyof typeof airOriginAirports;
     if (!country) return null;
 
-    if (shippingMode === 'Air') {
-      const airports = airOriginAirports[country];
-      return airports?.map((airport) => (
+    if (shippingMode === 'Air' && airOriginAirports[country]) {
+      return airOriginAirports[country].map((airport) => (
         <option key={airport} value={airport}>{airport}</option>
       ));
-    } else {
-      const ports = seaOriginPorts[country];
-      return ports?.map((port) => (
+    } else if (shippingMode !== 'Air' && seaOriginPorts[country]) {
+      return seaOriginPorts[country].map((port) => (
         <option key={port} value={port}>{port}</option>
       ));
     }
+    return null;
   };
 
   return (
