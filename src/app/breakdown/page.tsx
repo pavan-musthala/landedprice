@@ -170,6 +170,36 @@ function BreakdownContent() {
                   </div>
                 )}
 
+                {/* Air Specific Charges */}
+                {breakdown.shippingMode === 'Air' && (
+                  <>
+                    {/* Destination Charges */}
+                    <div className="border-b border-gray-200 pb-2">
+                      <h4 className="text-md font-medium text-gray-900 mb-2">Destination Charges</h4>
+                      <div className="space-y-2 pl-4">
+                        {breakdown.otherCharges.destinationClearanceINR && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Destination Clearance</span>
+                            <span className="font-medium">{formatCurrency(breakdown.otherCharges.destinationClearanceINR)}</span>
+                          </div>
+                        )}
+                        {breakdown.otherCharges.destinationDeliveryChargesINR && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Destination Delivery Charges</span>
+                            <span className="font-medium">{formatCurrency(breakdown.otherCharges.destinationDeliveryChargesINR)}</span>
+                          </div>
+                        )}
+                        {breakdown.otherCharges.destinationOrderChargesINR && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Destination Order Charges</span>
+                            <span className="font-medium">{formatCurrency(breakdown.otherCharges.destinationOrderChargesINR)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 {/* LCL Specific Charges */}
                 {breakdown.shippingMode === 'Sea LCL' && (
                   <>
