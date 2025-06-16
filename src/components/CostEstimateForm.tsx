@@ -249,7 +249,19 @@ export default function CostEstimateForm() {
                   className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
                 >
                   <option value="">Select {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}</option>
-                  {renderOriginPortOptions()}
+                  {(() => {
+                     const country = watch('originCountry') as keyof typeof airOriginAirports;
+                     if (shippingMode === 'Air' && country && airOriginAirports[country]) {
+                        return airOriginAirports[country].map((airport) => (
+                           <option key={airport} value={airport}>{airport}</option>
+                        ));
+                     } else if (shippingMode !== 'Air' && country && seaOriginPorts[country]) {
+                        return seaOriginPorts[country].map((port) => (
+                           <option key={port} value={port}>{port}</option>
+                        ));
+                     }
+                     return null;
+                  })()}
                 </select>
                  {errors.originPort && (
                    <p className="text-sm text-red-600">{errors.originPort.message}</p>
