@@ -422,22 +422,23 @@ export async function calculateLandedCost(input: CostEstimateInput): Promise<Cos
         freightOnlyINR = Math.round(freightUSD * USD_TO_INR);
         
         const clearanceINR = DESTINATION_CLEARANCE_AIR_INR;
-        const doChargesINR = DESTINATION_TRUCKING_CHARGES_AIR_INR;
+        const doChargesINR = DELIVERY_ORDER_CHARGES_AIR; // Using the fixed 5000 INR value
+        const deliveryChargesINR = DESTINATION_TRUCKING_CHARGES_AIR_INR;
 
         // Add all charges to otherCharges
         otherCharges.destinationClearanceINR = clearanceINR;
-        otherCharges.destinationDeliveryChargesINR = doChargesINR;
+        otherCharges.destinationDeliveryChargesINR = deliveryChargesINR;
         otherCharges.destinationOrderChargesINR = doChargesINR;
 
         // Use converted INCO term charges
         if (incoTerm === 'EXW') {
-          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.EXW + clearanceINR + doChargesINR + transactionalChargesINR;
+          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.EXW + clearanceINR + doChargesINR + deliveryChargesINR + transactionalChargesINR;
           otherCharges.exwChargesINR = INCO_TERMS_INR.EXW;
         } else if (incoTerm === 'FOB') {
-          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.FOB + clearanceINR + doChargesINR + transactionalChargesINR;
+          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.FOB + clearanceINR + doChargesINR + deliveryChargesINR + transactionalChargesINR;
           otherCharges.fobChargesINR = INCO_TERMS_INR.FOB;
         } else if (incoTerm === 'CIF') {
-          totalFreightINR = INCO_TERMS_INR.CIF + clearanceINR + doChargesINR + transactionalChargesINR;
+          totalFreightINR = INCO_TERMS_INR.CIF + clearanceINR + doChargesINR + deliveryChargesINR + transactionalChargesINR;
           freightOnlyINR = 0;
           otherCharges.cifChargesINR = INCO_TERMS_INR.CIF;
         }
