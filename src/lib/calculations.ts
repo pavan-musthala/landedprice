@@ -75,8 +75,9 @@ function calculateCBM(dimensions: { length: number; width: number; height: numbe
 }
 
 export function calculateVolumetricWeight(dimensions: { length: number; width: number; height: number }, cartons: number): number {
-  // For volumetric weight, we need to convert to cm³ first (× 100³) then divide by 6000
-  return (dimensions.length * dimensions.width * dimensions.height * cartons * 1000000) / 6000;
+  // Convert cm³ to m³ by dividing by 1,000,000, then divide by 6000 for air freight
+  // Formula: (L × W × H × cartons) / (1000000 × 6000)
+  return (dimensions.length * dimensions.width * dimensions.height * cartons) / (1000000 * 6000);
 }
 
 export function getCourierRate(weight: number): number {
@@ -393,35 +394,52 @@ export async function calculateLandedCost(input: CostEstimateInput): Promise<Cos
       const chargeableWeight = Math.max(grossWeight, volumetricWeight);
       details.chargeableWeight = chargeableWeight;
 
+      // Calculate transactional charges (3% of invoice value in INR) for all air shipments
+      const transactionalChargesINR = Math.round(productCostINR * (TRANSACTIONAL_CHARGES_PERCENTAGE / 100));
+      otherCharges.transactionalChargesINR = transactionalChargesINR;
+
       if (chargeableWeight <= 80) {
         // For shipments under 80kg, use fixed INR rate
         freightOnlyINR = chargeableWeight * AIR_CARGO_BASE_RATE_INR;
-        totalFreightINR = freightOnlyINR;
+        totalFreightINR = freightOnlyINR + transactionalChargesINR;
       } else {
-        // For shipments over 80kg, convert USD rate to INR
-        const freightUSD = chargeableWeight * AIR_CARGO_BASE_RATE_INR;
-        freightOnlyINR = freightUSD * USD_TO_INR;
+        // For shipments over 80kg, use tiered USD rates
+        let rateUSD = AIR_CARGO_BASE_RATE_USD; // Default rate
+        
+        // Apply tiered rates based on weight
+        if (chargeableWeight <= 2) rateUSD = AIR_RATE_0_2KG;
+        else if (chargeableWeight <= 10) rateUSD = AIR_RATE_3_10KG;
+        else if (chargeableWeight <= 40) rateUSD = AIR_RATE_11_40KG;
+        else if (chargeableWeight <= 99) rateUSD = AIR_RATE_41_99KG;
+        else if (chargeableWeight <= 200) rateUSD = AIR_RATE_100_200KG;
+        else if (chargeableWeight <= 300) rateUSD = AIR_RATE_201_300KG;
+        else if (chargeableWeight <= 500) rateUSD = AIR_RATE_301_500KG;
+        else if (chargeableWeight <= 5000) rateUSD = AIR_RATE_501_5000KG;
+        else rateUSD = AIR_RATE_ABOVE_5000KG;
+
+        // Calculate freight in USD first, then convert to INR
+        const freightUSD = chargeableWeight * rateUSD;
+        freightOnlyINR = Math.round(freightUSD * USD_TO_INR);
         
         const clearanceINR = DESTINATION_CLEARANCE_AIR_INR;
         const doChargesINR = DESTINATION_TRUCKING_CHARGES_AIR_INR;
 
+        // Add all charges to otherCharges
+        otherCharges.destinationClearanceINR = clearanceINR;
+        otherCharges.destinationDeliveryChargesINR = doChargesINR;
+        otherCharges.destinationOrderChargesINR = doChargesINR;
+
         // Use converted INCO term charges
         if (incoTerm === 'EXW') {
-          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.EXW + clearanceINR + doChargesINR;
+          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.EXW + clearanceINR + doChargesINR + transactionalChargesINR;
           otherCharges.exwChargesINR = INCO_TERMS_INR.EXW;
-          otherCharges.clearanceINR = clearanceINR;
-          otherCharges.doChargesINR = doChargesINR;
         } else if (incoTerm === 'FOB') {
-          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.FOB + clearanceINR + doChargesINR;
+          totalFreightINR = freightOnlyINR + INCO_TERMS_INR.FOB + clearanceINR + doChargesINR + transactionalChargesINR;
           otherCharges.fobChargesINR = INCO_TERMS_INR.FOB;
-          otherCharges.clearanceINR = clearanceINR;
-          otherCharges.doChargesINR = doChargesINR;
         } else if (incoTerm === 'CIF') {
-          totalFreightINR = INCO_TERMS_INR.CIF + clearanceINR + doChargesINR;
+          totalFreightINR = INCO_TERMS_INR.CIF + clearanceINR + doChargesINR + transactionalChargesINR;
           freightOnlyINR = 0;
           otherCharges.cifChargesINR = INCO_TERMS_INR.CIF;
-          otherCharges.clearanceINR = clearanceINR;
-          otherCharges.doChargesINR = doChargesINR;
         }
       }
       break;

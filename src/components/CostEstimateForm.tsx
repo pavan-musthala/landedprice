@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveToGoogleSheet } from '@/lib/googleSheets';
 import { COMMON_CURRENCIES } from '@/types';
+import { originCountries, seaOriginPorts, seaDestinationPorts, airOriginAirports, airDestinationAirports, hsnCodes } from '@/lib/constants';
 
 export default function CostEstimateForm() {
   const router = useRouter();
@@ -205,71 +206,91 @@ export default function CostEstimateForm() {
               Origin & Destination
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Origin Country */}
+              {/* Origin Country Dropdown */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Origin Country</label>
-                <input
-                  type="text"
+                <select
                   {...register('originCountry')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
-                  placeholder="Enter origin country"
-                />
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                >
+                  <option value="">Select Origin Country</option>
+                  {originCountries.map((country) => (
+                    <option key={country} value={country}>{country}</option>
+                  ))}
+                </select>
                 {errors.originCountry && (
                   <p className="text-sm text-red-600">{errors.originCountry.message}</p>
                 )}
               </div>
 
-              {/* Origin Port/Airport */}
+              {/* Origin Port (or Airport) Dropdown – conditionally rendered based on shipping mode and origin country */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}
                 </label>
-                <input
-                  type="text"
+                <select
                   {...register('originPort')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
-                  placeholder={shippingMode === 'Air' ? 'Enter origin Airport Name' : 'Enter origin port'}
-                />
-                {errors.originPort && (
-                  <p className="text-sm text-red-600">{errors.originPort.message}</p>
-                )}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                >
+                  <option value="">Select {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}</option>
+                  {(() => {
+                     const country = watch('originCountry');
+                     if (shippingMode === 'Air' && country && airOriginAirports[country]) {
+                        return airOriginAirports[country].map((airport) => (
+                           <option key={airport} value={airport}>{airport}</option>
+                        ));
+                     } else if (shippingMode !== 'Air' && country && seaOriginPorts[country]) {
+                        return seaOriginPorts[country].map((port) => ( 
+                           <option key={port} value={port}>{port}</option> 
+                        ));
+                     }
+                     return null;
+                  })()}
+                </select>
+                 {errors.originPort && (
+                   <p className="text-sm text-red-600">{errors.originPort.message}</p>
+                 )}
               </div>
 
-              {/* Destination Port/Airport */}
+              {/* Destination Port (or Airport) Dropdown – conditionally rendered based on shipping mode */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   {shippingMode === 'Air' ? 'Destination Airport' : 'Destination Port'}
                 </label>
-                <input
-                  type="text"
+                <select
                   {...register('destinationPort')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
-                  placeholder={shippingMode === 'Air' ? 'Enter Destination Airport Name' : 'Enter destination port'}
-                />
-                {errors.destinationPort && (
-                  <p className="text-sm text-red-600">{errors.destinationPort.message}</p>
-                )}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                >
+                  <option value="">Select {shippingMode === 'Air' ? 'Destination Airport' : 'Destination Port'}</option>
+                  {(() => {
+                     if (shippingMode === 'Air') {
+                        return airDestinationAirports.map((airport) => (
+                           <option key={airport} value={airport}>{airport}</option>
+                        ));
+                     } else {
+                        return seaDestinationPorts.map((port) => (
+                           <option key={port} value={port}>{port}</option>
+                        ));
+                     }
+                  })()}
+                </select>
+                 {errors.destinationPort && (
+                   <p className="text-sm text-red-600">{errors.destinationPort.message}</p>
+                 )}
               </div>
 
-              {/* HSN Code */}
+              {/* HSN Code Dropdown (replacing the text input) */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">HSN Code</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    {...register('hsnCode')}
-                    className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
-                    placeholder="Enter HSN code"
-                  />
-                  {isValidatingHSN && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg className="animate-spin h-5 w-5 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </div>
-                  )}
-                </div>
+                <select
+                  {...register('hsnCode')}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                >
+                  <option value="">Select HSN Code</option>
+                  {hsnCodes.map((code) => (
+                    <option key={code} value={code}>{code}</option>
+                  ))}
+                </select>
                 {errors.hsnCode && (
                   <p className="text-sm text-red-600">{errors.hsnCode.message}</p>
                 )}

@@ -154,7 +154,7 @@ function BreakdownContent() {
                     <span className="text-gray-600">
                       {breakdown.shippingMode === 'Sea LCL' 
                         ? `Base Freight Cost (${breakdown.details?.chargeableCBM} CBM × $${FREIGHT_PER_CBM_USD})`
-                        : 'Base Freight Cost (from database)'}
+                        : 'Base Freight Cost'}
                     </span>
                     <span className="font-medium">{formatCurrency(breakdown.freightOnlyINR)}</span>
                   </div>

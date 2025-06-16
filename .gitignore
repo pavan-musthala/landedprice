@@ -68,3 +68,4 @@ next-env.d.ts
 *.tgz
 .dataconnect
 .vercel
+.env*.local
