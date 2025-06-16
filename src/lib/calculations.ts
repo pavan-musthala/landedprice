@@ -64,7 +64,7 @@ export const AIR_RATE_501_5000KG = 2.1; // USD per kg
 export const AIR_RATE_ABOVE_5000KG = 1.8; // USD per kg
 
 // Air Freight Additional Charges
-export const DESTINATION_CLEARANCE_AIR = 61; // INR
+export const DESTINATION_CLEARANCE_AIR = 5000; // INR
 export const DELIVERY_ORDER_CHARGES_AIR = 5000; // INR
 export const DESTINATION_TRUCKING_CHARGES_AIR = 3000; // INR per 100 kg
 

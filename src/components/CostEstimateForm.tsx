@@ -10,11 +10,51 @@ import { useRouter } from 'next/navigation';
 import { saveToGoogleSheet } from '@/lib/googleSheets';
 import { COMMON_CURRENCIES } from '@/types';
 import { originCountries, seaOriginPorts, seaDestinationPorts, airOriginAirports, airDestinationAirports, hsnCodes, OriginCountry } from '@/lib/constants';
+import { motion } from 'framer-motion';
 
 // Add this type guard function at the top of the file, after imports
 function isValidCountry(country: string): country is keyof typeof airOriginAirports {
   return country in airOriginAirports;
 }
+
+// Add custom styles
+const styles = {
+  formContainer: "max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-lg transform transition-all duration-300 hover:shadow-xl",
+  formTitle: "text-3xl font-bold text-[#6F4E37] mb-8 text-center",
+  formSection: "mb-8 p-6 bg-white rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-all duration-300",
+  sectionTitle: "text-xl font-semibold text-[#A0522D] mb-4 flex items-center gap-2",
+  inputGroup: "space-y-4",
+  label: "block text-sm font-medium text-[#6F4E37] mb-1.5 transition-colors duration-200",
+  input: "block w-full px-4 py-3 bg-white border border-orange-200 rounded-lg shadow-sm focus:ring-2 focus:ring-[#FF8C42] focus:border-[#FF8C42] sm:text-sm transition-all duration-200 placeholder:text-orange-200",
+  select: "block w-full px-4 py-3 bg-white border border-orange-200 rounded-lg shadow-sm focus:ring-2 focus:ring-[#FF8C42] focus:border-[#FF8C42] sm:text-sm transition-all duration-200",
+  error: "text-sm text-red-600 mt-1.5 animate-fadeIn",
+  button: "w-full px-6 py-3 bg-[#FF8C42] text-white font-semibold rounded-lg shadow-md hover:bg-[#FF7B2D] focus:outline-none focus:ring-2 focus:ring-[#FF8C42] focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
+  buttonDisabled: "w-full px-6 py-3 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed",
+  loadingSpinner: "animate-spin h-5 w-5 text-white",
+  icon: "h-5 w-5 text-[#FF8C42]"
+};
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.6,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.3 }
+  }
+};
 
 export default function CostEstimateForm() {
   const router = useRouter();
@@ -94,12 +134,25 @@ export default function CostEstimateForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
-      {/* Header */}
-      <header className="bg-white shadow-md border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-orange-800">BEFACH INTERNATIONAL</h1>
-          <p className="mt-2 text-orange-600 text-lg">Landed Cost Calculator</p>
+    <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white">
+      {/* Header with Icons */}
+      <header className="bg-white shadow-lg border-b border-orange-100">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-orange-800 mb-2">BEFACH INTERNATIONAL</h1>
+            <p className="text-xl text-orange-600">Get Your Landed Price Quotation in Seconds - Know Your True Cost, Instantly!</p>
+          </div>
         </div>
       </header>
 
@@ -108,24 +161,26 @@ export default function CostEstimateForm() {
           {/* Product Information Section */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-orange-100">
             <h2 className="text-2xl font-semibold text-orange-800 mb-6">Product Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Product Name */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Product Name</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Product Name</label>
                 <input
-                  type="text"
                   {...register('productName')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter product name"
                 />
                 {errors.productName && (
-                  <p className="text-sm text-red-600">{errors.productName.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.productName.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Invoice Value with Currency */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Invoice Value</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Invoice Value</label>
                 <div className="grid grid-cols-12 gap-4">
                   <div className="col-span-7">
                     <input
@@ -139,14 +194,14 @@ export default function CostEstimateForm() {
                           isPositive: (value) => value >= 0 || 'Invoice value must be greater than or equal to 0'
                         }
                       })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter invoice value"
                     />
                   </div>
                   <div className="col-span-5">
                     <select
                       {...register('currency')}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                      className={styles.select}
                     >
                       {COMMON_CURRENCIES.map(currency => (
                         <option key={currency.code} value={currency.code}>
@@ -157,7 +212,13 @@ export default function CostEstimateForm() {
                   </div>
                 </div>
                 {errors.productCost && (
-                  <p className="text-sm text-red-600">{errors.productCost.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.productCost.message}
+                  </motion.p>
                 )}
               </div>
             </div>
@@ -165,53 +226,66 @@ export default function CostEstimateForm() {
 
           {/* Shipping Details Section */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-orange-100">
-            <h2 className="text-2xl font-semibold text-orange-800 mb-6">Shipping Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Shipping Mode */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Shipping Mode</label>
+            <h2 className="text-2xl font-semibold text-orange-800 mb-6">Shipping Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Shipping Mode</label>
                 <select
                   {...register('shippingMode')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="Sea FCL">Sea FCL</option>
                   <option value="Sea LCL">Sea LCL</option>
                   <option value="Air">Air</option>
                 </select>
                 {errors.shippingMode && (
-                  <p className="text-sm text-red-600">{errors.shippingMode.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.shippingMode.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* INCO Term */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">INCO Term</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>INCO Term</label>
                 <select
                   {...register('incoTerm')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="EXW">EXW</option>
                   <option value="FOB">FOB</option>
                   <option value="CIF">CIF</option>
                 </select>
                 {errors.incoTerm && (
-                  <p className="text-sm text-red-600">{errors.incoTerm.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.incoTerm.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Container Type (only for Sea FCL) */}
               {shippingMode === 'Sea FCL' && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Container Type</label>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Container Type</label>
                   <select
                     {...register('containerType')}
-                    className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                    className={styles.select}
                   >
                     <option value="20 ft">20 ft</option>
                     <option value="40 ft">40 ft</option>
                   </select>
                   {errors.containerType && (
-                    <p className="text-sm text-red-600">{errors.containerType.message}</p>
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className={styles.error}
+                    >
+                      {errors.containerType.message}
+                    </motion.p>
                   )}
                 </div>
               )}
@@ -220,19 +294,13 @@ export default function CostEstimateForm() {
 
           {/* Origin & Destination Section */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-orange-100">
-            <h2 className="text-2xl font-semibold text-orange-800 mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Origin & Destination
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Origin Country Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Origin Country</label>
+            <h2 className="text-2xl font-semibold text-orange-800 mb-6">Origin & Destination</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Origin Country</label>
                 <select
                   {...register('originCountry')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="">Select Origin Country</option>
                   {originCountries.map((country) => (
@@ -240,18 +308,22 @@ export default function CostEstimateForm() {
                   ))}
                 </select>
                 {errors.originCountry && (
-                  <p className="text-sm text-red-600">{errors.originCountry.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.originCountry.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Origin Port (or Airport) Dropdown – conditionally rendered based on shipping mode and origin country */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>
                   {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}
                 </label>
                 <select
                   {...register('originPort')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="">Select {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}</option>
                   {(() => {
@@ -270,18 +342,22 @@ export default function CostEstimateForm() {
                   })()}
                 </select>
                  {errors.originPort && (
-                   <p className="text-sm text-red-600">{errors.originPort.message}</p>
+                   <motion.p 
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     className={styles.error}
+                   >
+                     {errors.originPort.message}
+                   </motion.p>
                  )}
               </div>
-
-              {/* Destination Port (or Airport) Dropdown – conditionally rendered based on shipping mode */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>
                   {shippingMode === 'Air' ? 'Destination Airport' : 'Destination Port'}
                 </label>
                 <select
                   {...register('destinationPort')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="">Select {shippingMode === 'Air' ? 'Destination Airport' : 'Destination Port'}</option>
                   {(() => {
@@ -297,16 +373,20 @@ export default function CostEstimateForm() {
                   })()}
                 </select>
                  {errors.destinationPort && (
-                   <p className="text-sm text-red-600">{errors.destinationPort.message}</p>
+                   <motion.p 
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     className={styles.error}
+                   >
+                     {errors.destinationPort.message}
+                   </motion.p>
                  )}
               </div>
-
-              {/* HSN Code Dropdown (replacing the text input) */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">HSN Code</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>HSN Code</label>
                 <select
                   {...register('hsnCode')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
+                  className={styles.select}
                 >
                   <option value="">Select HSN Code</option>
                   {hsnCodes.map((code) => (
@@ -314,7 +394,13 @@ export default function CostEstimateForm() {
                   ))}
                 </select>
                 {errors.hsnCode && (
-                  <p className="text-sm text-red-600">{errors.hsnCode.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.hsnCode.message}
+                  </motion.p>
                 )}
               </div>
             </div>
@@ -322,96 +408,109 @@ export default function CostEstimateForm() {
 
           {/* Package Details Section */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-orange-100">
-            <h2 className="text-2xl font-semibold text-orange-800 mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Package Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Gross Weight */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Gross Weight (kg)</label>
+            <h2 className="text-2xl font-semibold text-orange-800 mb-6">Package Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Gross Weight (kg)</label>
                 <input
                   type="number"
                   step="0.01"
                   {...register('grossWeight', { valueAsNumber: true })}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter gross weight"
                 />
                 {errors.grossWeight && (
-                  <p className="text-sm text-red-600">{errors.grossWeight.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.grossWeight.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Dimensions and Quantity for Sea shipments */}
               {shippingMode === 'Sea FCL' || shippingMode === 'Sea LCL' ? (
                 <>
-                  {/* Length */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Length (m)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Length (m)</label>
                     <input
                       type="number"
                       step="0.01"
                       {...register('dimensions.length', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter length"
                     />
                     {errors.dimensions?.length && (
-                      <p className="text-sm text-red-600">{errors.dimensions.length.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.length.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  {/* Width */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Width (m)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Width (m)</label>
                     <input
                       type="number"
                       step="0.01"
                       {...register('dimensions.width', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter width"
                     />
                     {errors.dimensions?.width && (
-                      <p className="text-sm text-red-600">{errors.dimensions.width.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.width.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  {/* Height */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Height (m)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Height (m)</label>
                     <input
                       type="number"
                       step="0.01"
                       {...register('dimensions.height', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter height"
                     />
                     {errors.dimensions?.height && (
-                      <p className="text-sm text-red-600">{errors.dimensions.height.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.height.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  {/* Quantity */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Quantity</label>
                     <input
                       type="number"
                       {...register('cartons', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter quantity"
                     />
                     {errors.cartons && (
-                      <p className="text-sm text-red-600">{errors.cartons.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.cartons.message}
+                      </motion.p>
                     )}
                   </div>
                 </>
               ) : (
-                // Air shipment form (unchanged)
                 <>
-                  {/* Number of Cartons for Air */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Number of Cartons</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Number of Cartons</label>
                     <input
                       type="number"
                       step="1"
@@ -420,54 +519,74 @@ export default function CostEstimateForm() {
                         valueAsNumber: true,
                         validate: (value) => !isNaN(value) || 'Number of cartons must be a valid number'
                       })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter number of cartons"
                     />
                     {errors.cartons && (
-                      <p className="text-sm text-red-600">{errors.cartons.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.cartons.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  {/* Dimensions for Air */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Length (cm)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Length (cm)</label>
                     <input
                       type="number"
                       step="0.1"
                       {...register('dimensions.length', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter length"
                     />
                     {errors.dimensions?.length && (
-                      <p className="text-sm text-red-600">{errors.dimensions.length.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.length.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Width (cm)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Width (cm)</label>
                     <input
                       type="number"
                       step="0.1"
                       {...register('dimensions.width', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter width"
                     />
                     {errors.dimensions?.width && (
-                      <p className="text-sm text-red-600">{errors.dimensions.width.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.width.message}
+                      </motion.p>
                     )}
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Height (cm)</label>
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Height (cm)</label>
                     <input
                       type="number"
                       step="0.1"
                       {...register('dimensions.height', { valueAsNumber: true })}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                      className={styles.input}
                       placeholder="Enter height"
                     />
                     {errors.dimensions?.height && (
-                      <p className="text-sm text-red-600">{errors.dimensions.height.message}</p>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={styles.error}
+                      >
+                        {errors.dimensions.height.message}
+                      </motion.p>
                     )}
                   </div>
                 </>
@@ -475,63 +594,78 @@ export default function CostEstimateForm() {
             </div>
           </div>
 
-          {/* Customer Information Section - Moved to end */}
+          {/* Customer Information Section - Kept at the end */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-orange-100">
             <h2 className="text-2xl font-semibold text-orange-800 mb-6">Customer Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Customer Name */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Customer Name</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Customer Name</label>
                 <input
-                  type="text"
                   {...register('customerName')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter customer name"
                 />
                 {errors.customerName && (
-                  <p className="text-sm text-red-600">{errors.customerName.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.customerName.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Company Name */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Company Name</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Company Name</label>
                 <input
-                  type="text"
                   {...register('companyName')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter company name"
                 />
                 {errors.companyName && (
-                  <p className="text-sm text-red-600">{errors.companyName.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.companyName.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Contact Number */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Contact Number</label>
                 <input
                   type="tel"
                   {...register('contactNumber')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter 10-digit contact number"
                 />
                 {errors.contactNumber && (
-                  <p className="text-sm text-red-600">{errors.contactNumber.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.contactNumber.message}
+                  </motion.p>
                 )}
               </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Email</label>
                 <input
                   type="email"
                   {...register('email')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors"
+                  className={styles.input}
                   placeholder="Enter email address"
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={styles.error}
+                  >
+                    {errors.email.message}
+                  </motion.p>
                 )}
               </div>
             </div>
@@ -562,7 +696,7 @@ export default function CostEstimateForm() {
             <div className="rounded-xl bg-red-50 p-6 border border-red-100">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className={styles.icon} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                 </div>
