@@ -1,8 +1,13 @@
 /* Origin Countries (Common) */
-export const originCountries = ["Malaysia", "China", "USA", "Germany", "UAE"];
+export const originCountries = ["Malaysia", "China", "USA", "Germany", "UAE"] as const;
+export type OriginCountry = typeof originCountries[number];
 
 /* Sea Ports */
-export const seaOriginPorts = {
+export type SeaPorts = {
+  [K in OriginCountry]: string[];
+};
+
+export const seaOriginPorts: SeaPorts = {
   Malaysia: ["Port Klang", "Tanjung Pelepas", "penang port", "johor port"],
   China: ["Shanghai", "shenzhen", "ningbo-zhoushan", "guangzhou", "quingdao", "tianjin", "xiamen", "dalian"],
   USA: ["Los angeles", "long beach", "new york/new jersey", "savannah", "houston", "seattle/tacoma", "oakland", "charleston"],
@@ -10,10 +15,14 @@ export const seaOriginPorts = {
   UAE: ["jebel ali (dubai)", "khalifa port (abu dhabi)", "sharjah port"]
 };
 
-export const seaDestinationPorts = ["Chennai", "Nhava Sheva", "Mundra"];
+export const seaDestinationPorts = ["Chennai", "Nhava Sheva", "Mundra"] as const;
 
 /* Air Airports */
-export const airOriginAirports = {
+export type AirAirports = {
+  [K in OriginCountry]: string[];
+};
+
+export const airOriginAirports: AirAirports = {
   Malaysia: [
     "Kuala Lumpur International Airport", "Kota Kinabalu International Airport", "Penang International Airport",
     "Kuching International Airport", "Senai International Airport", "Langkawi International Airport",

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveToGoogleSheet } from '@/lib/googleSheets';
 import { COMMON_CURRENCIES } from '@/types';
-import { originCountries, seaOriginPorts, seaDestinationPorts, airOriginAirports, airDestinationAirports, hsnCodes } from '@/lib/constants';
+import { originCountries, seaOriginPorts, seaDestinationPorts, airOriginAirports, airDestinationAirports, hsnCodes, OriginCountry } from '@/lib/constants';
 
 export default function CostEstimateForm() {
   const router = useRouter();
@@ -70,6 +70,23 @@ export default function CostEstimateForm() {
   // Helper function to format currency
   const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  };
+
+  const renderOriginPortOptions = () => {
+    const country = watch('originCountry') as OriginCountry | undefined;
+    if (!country) return null;
+
+    if (shippingMode === 'Air') {
+      const airports = airOriginAirports[country];
+      return airports?.map((airport) => (
+        <option key={airport} value={airport}>{airport}</option>
+      ));
+    } else {
+      const ports = seaOriginPorts[country];
+      return ports?.map((port) => (
+        <option key={port} value={port}>{port}</option>
+      ));
+    }
   };
 
   return (
@@ -233,19 +250,7 @@ export default function CostEstimateForm() {
                   className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-colors bg-white"
                 >
                   <option value="">Select {shippingMode === 'Air' ? 'Origin Airport' : 'Origin Port'}</option>
-                  {(() => {
-                     const country = watch('originCountry');
-                     if (shippingMode === 'Air' && country && airOriginAirports[country]) {
-                        return airOriginAirports[country].map((airport) => (
-                           <option key={airport} value={airport}>{airport}</option>
-                        ));
-                     } else if (shippingMode !== 'Air' && country && seaOriginPorts[country]) {
-                        return seaOriginPorts[country].map((port) => ( 
-                           <option key={port} value={port}>{port}</option> 
-                        ));
-                     }
-                     return null;
-                  })()}
+                  {renderOriginPortOptions()}
                 </select>
                  {errors.originPort && (
                    <p className="text-sm text-red-600">{errors.originPort.message}</p>
