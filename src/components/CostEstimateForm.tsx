@@ -71,6 +71,7 @@ export default function CostEstimateForm() {
   } = useForm<CostEstimateInput>({
     resolver: zodResolver(costEstimateSchema),
     defaultValues: {
+      shippingMode: 'Sea FCL',
       dimensions: {
         length: 1,
         width: 1,
@@ -137,21 +138,11 @@ export default function CostEstimateForm() {
     <div className="min-h-screen bg-gradient-to-b from-orange-100 via-orange-50 to-white">
       {/* Header with Icons */}
       <header className="bg-white shadow-lg border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-            <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-orange-800 mb-2">BEFACH INTERNATIONAL</h1>
-            <p className="text-xl text-orange-600">Get Your Landed Price Quotation in Seconds - Know Your True Cost, Instantly!</p>
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center mb-4">
+            <img src="/befach.jpg" alt="Befach International Logo" className="w-36 h-auto mb-2" style={{maxWidth:'200px'}} />
+            <h1 className="text-3xl font-bold text-orange-800 mb-1">Befach International</h1>
+            <p className="text-xl font-bold text-gray-800 text-center">Get Your Landed Price Quotation in Seconds Know Your True Cost, Instantly!</p>
           </div>
         </div>
       </header>
@@ -341,7 +332,7 @@ export default function CostEstimateForm() {
                      }
                   })()}
                 </select>
-                 {errors.originPort && (
+                {errors.originPort && (
                    <motion.p 
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
@@ -349,7 +340,7 @@ export default function CostEstimateForm() {
                    >
                      {errors.originPort.message}
                    </motion.p>
-                 )}
+                )}
               </div>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>
@@ -372,7 +363,7 @@ export default function CostEstimateForm() {
                      }
                   })()}
                 </select>
-                 {errors.destinationPort && (
+                {errors.destinationPort && (
                    <motion.p 
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
@@ -380,12 +371,12 @@ export default function CostEstimateForm() {
                    >
                      {errors.destinationPort.message}
                    </motion.p>
-                 )}
+                )}
               </div>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>HSN Code</label>
                 <select
-                  {...register('hsnCode')}
+                    {...register('hsnCode')}
                   className={styles.select}
                 >
                   <option value="">Select HSN Code</option>
